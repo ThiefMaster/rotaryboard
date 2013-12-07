@@ -12,20 +12,19 @@ BIN = $(TMPDIR)/$(NAME).elf
 HEX = $(NAME).hex
 
 # symbolic targets:
-.PHONY: all clean flash
-all:	$(TMPDIR) $(HEX)
+all: $(TMPDIR) $(HEX)
 
 clean:
 	@echo "   CLEAN"
 	@rm -f $(TMPDIR)/*.o $(HEX) $(BIN)
 
-flash:	all
+flash: all
 	@echo "   FLASH"
 	@$(DUDE) -V -e -U flash:w:$(HEX)
 
 
 # file targets:
-$(OBJ) : $(TMPDIR)/%.o : %.c
+$(OBJ): $(TMPDIR)/%.o : %.c
 	@echo "   CC     $(<:.c=.o)"
 	@$(CC) -c $< -o $@
 
@@ -33,10 +32,13 @@ $(BIN): $(OBJ)
 	@echo "   ELF"
 	@$(CC) -o $(BIN) $(OBJ)
 
-$(HEX):	$(BIN)
+$(HEX): $(BIN)
 	@echo "   HEX"
 	@rm -f $(HEX)
 	@avr-objcopy -j .text -j .data -O ihex $(BIN) $(HEX)
 
 $(TMPDIR):
 	@mkdir $(TMPDIR)
+
+
+.PHONY: all clean flash
