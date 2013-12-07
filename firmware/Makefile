@@ -1,0 +1,42 @@
+# Use this Makefile if you don't use Atmel Studio
+
+DEFS = -DF_CPU=18432000L -DBAUD=19200 -DMAX_ROTARY_ENCODERS=5
+DUDE = avrdude -p m644p -P COM5 -c avr911
+CC = avr-gcc $(DEFS) -Wall -Wextra -Os -mmcu=atmega644p -std=gnu99
+
+NAME = RotaryBoard
+TMPDIR = .tmp
+SRC = $(wildcard *.c)
+OBJ = $(patsubst %.c,.tmp/%.o,$(SRC))
+BIN = $(TMPDIR)/$(NAME).elf
+HEX = $(NAME).hex
+
+# symbolic targets:
+.PHONY: all clean flash
+all:	$(TMPDIR) $(HEX)
+
+clean:
+	@echo "   CLEAN"
+	@rm -f $(TMPDIR)/*.o $(HEX) $(BIN)
+
+flash:	all
+	@echo "   FLASH"
+	@$(DUDE) -V -e -U flash:w:$(HEX)
+
+
+# file targets:
+$(OBJ) : $(TMPDIR)/%.o : %.c
+	@echo "   CC     $(<:.c=.o)"
+	@$(CC) -c $< -o $@
+
+$(BIN): $(OBJ)
+	@echo "   ELF"
+	@$(CC) -o $(BIN) $(OBJ)
+
+$(HEX):	$(BIN)
+	@echo "   HEX"
+	@rm -f $(HEX)
+	@avr-objcopy -j .text -j .data -O ihex $(BIN) $(HEX)
+
+$(TMPDIR):
+	@mkdir $(TMPDIR)
