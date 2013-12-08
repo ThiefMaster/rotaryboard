@@ -1,5 +1,8 @@
 .*.swp
 *.suo
-*.atsuo
+obj/
+Properties/
+Debug/
+Release/
 *.hex
 .tmp/
