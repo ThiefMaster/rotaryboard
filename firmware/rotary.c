@@ -7,7 +7,7 @@
 #define CLR_FIELD(NUM, FIELD) *encoder_list[(NUM)].port_ ##FIELD &= ~(1 << encoder_list[(NUM)].pin_ ##FIELD)
 #define MAKE_OUTPUT(NUM, FIELD)	*encoder_list[(NUM)].ddr_ ##FIELD |= (1 << encoder_list[(NUM)].pin_ ##FIELD)
 #define MAKE_INPUT(NUM, FIELD) *encoder_list[(NUM)].ddr_ ##FIELD &= ~(1 << encoder_list[(NUM)].pin_ ##FIELD)
-#define ENABLE_PULLUP(NUM, FIELD) SET_FIELD(NUM, FIELD)
+#define ENABLE_PULLUP(NUM, FIELD) *encoder_list[(NUM)].pullup_ ##FIELD |= (1 << encoder_list[(NUM)].pin_ ##FIELD)
 
 // value is in 10ms units
 #define BUTTON_DEBOUNCE_DELAY 3

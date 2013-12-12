@@ -21,6 +21,7 @@
 #define _MAKE_IO_FIELDS(FIELD) \
 	volatile uint8_t *ddr_ ##FIELD; \
 	volatile uint8_t *port_ ##FIELD; \
+	volatile uint8_t *pullup_ ##FIELD; \
 	uint8_t pin_ ##FIELD;
 
 #define _MAKE_IO_ARRAY(FIELD, SIZE) \
@@ -41,7 +42,7 @@ struct rotary_encoder {
 	{ & _MAKE_DDR(PORT_PHASE_0), & _MAKE_DDR(PORT_PHASE_1) }, \
 	{ & _MAKE_PIN(PORT_PHASE_0), & _MAKE_PIN(PORT_PHASE_1) }, \
 	{ _MAKE_P(PORT_PHASE_0, PIN_PHASE_0), _MAKE_P(PORT_PHASE_1, PIN_PHASE_1) }, \
-	& _MAKE_DDR(PORT_BUTTON), & _MAKE_PIN(PORT_BUTTON), _MAKE_P(PORT_BUTTON, PIN_BUTTON), \
+	& _MAKE_DDR(PORT_BUTTON), & _MAKE_PIN(PORT_BUTTON), & _MAKE_PORT(PORT_BUTTON), _MAKE_P(PORT_BUTTON, PIN_BUTTON), \
 	{ & _MAKE_DDR(PORT_LED_0), & _MAKE_DDR(PORT_LED_1) }, \
 	{ & _MAKE_PORT(PORT_LED_0), & _MAKE_PORT(PORT_LED_1) }, \
 	{ _MAKE_P(PORT_LED_0, PIN_LED_0), _MAKE_P(PORT_LED_1, PIN_LED_1) } \
