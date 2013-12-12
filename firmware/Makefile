@@ -1,4 +1,4 @@
-DEFS = -DF_CPU=18432000L -DBAUD=19200 -DMAX_ROTARY_ENCODERS=5
+DEFS = -DF_CPU=18432000L -DBAUD=19200 -DMAX_ROTARY_ENCODERS=7
 DUDE = avrdude -p m644p -P COM5 -c avr911
 CC = avr-gcc $(DEFS) -Wall -Wextra -Os -mmcu=atmega644p -std=gnu99
 

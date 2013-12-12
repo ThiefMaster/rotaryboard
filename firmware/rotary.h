@@ -6,6 +6,8 @@
 // maximum supported number of rotary encoders.
 // with 4 8-bit ports and 5 lines (2x data, 2x led, 1x button) 6 is the maximum
 // it can be lowered to save some memory
+// note that all elements in the struct passed to rotary_init are counted, i.e.
+// buttons/leds handled by this library must be considered, too!
 #ifndef MAX_ROTARY_ENCODERS
 #define MAX_ROTARY_ENCODERS 6
 #endif
@@ -29,7 +31,15 @@
 	volatile uint8_t *port_ ##FIELD [SIZE]; \
 	uint8_t pin_ ##FIELD [SIZE];
 
+
+#define FEAT_ROTARY 0x1
+#define FEAT_BUTTON 0x2
+#define FEAT_LED 0x4
+#define FEAT_LED2 0x8
+
+
 struct rotary_encoder {
+	uint8_t features;
 	_MAKE_IO_ARRAY(phase, 2)
 	_MAKE_IO_FIELDS(button)
 	_MAKE_IO_ARRAY(leds, 2)
@@ -38,7 +48,10 @@ struct rotary_encoder {
 
 
 // public api
+
+// defines a rotary encoder with two leds and a button
 #define ROTARY_ENCODER(PORT_PHASE_0, PIN_PHASE_0, PORT_PHASE_1, PIN_PHASE_1, PORT_BUTTON, PIN_BUTTON, PORT_LED_0, PIN_LED_0, PORT_LED_1, PIN_LED_1) { \
+	FEAT_ROTARY | FEAT_BUTTON | FEAT_LED | FEAT_LED2, \
 	{ & _MAKE_DDR(PORT_PHASE_0), & _MAKE_DDR(PORT_PHASE_1) }, \
 	{ & _MAKE_PIN(PORT_PHASE_0), & _MAKE_PIN(PORT_PHASE_1) }, \
 	{ _MAKE_P(PORT_PHASE_0, PIN_PHASE_0), _MAKE_P(PORT_PHASE_1, PIN_PHASE_1) }, \
@@ -46,6 +59,19 @@ struct rotary_encoder {
 	{ & _MAKE_DDR(PORT_LED_0), & _MAKE_DDR(PORT_LED_1) }, \
 	{ & _MAKE_PORT(PORT_LED_0), & _MAKE_PORT(PORT_LED_1) }, \
 	{ _MAKE_P(PORT_LED_0, PIN_LED_0), _MAKE_P(PORT_LED_1, PIN_LED_1) } \
+}
+
+// when using buttons make sure to place them AFTER the actual rotary encoders
+// the first item that does not have FEAT_ROTARY breaks rotary-related loops
+#define LED_BUTTON(PORT_BUTTON, PIN_BUTTON, PORT_LED, PIN_LED) { \
+	FEAT_BUTTON | FEAT_LED, \
+	{ NULL, NULL }, \
+	{ NULL, NULL }, \
+	{ 0, 0 }, \
+	& _MAKE_DDR(PORT_BUTTON), & _MAKE_PIN(PORT_BUTTON), & _MAKE_PORT(PORT_BUTTON), _MAKE_P(PORT_BUTTON, PIN_BUTTON), \
+	{ & _MAKE_DDR(PORT_LED), NULL }, \
+	{ & _MAKE_PORT(PORT_LED), NULL }, \
+	{ _MAKE_P(PORT_LED, PIN_LED), 0 } \
 }
 
 

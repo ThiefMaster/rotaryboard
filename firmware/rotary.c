@@ -9,6 +9,8 @@
 #define MAKE_INPUT(NUM, FIELD) *encoder_list[(NUM)].ddr_ ##FIELD &= ~(1 << encoder_list[(NUM)].pin_ ##FIELD)
 #define ENABLE_PULLUP(NUM, FIELD) *encoder_list[(NUM)].pullup_ ##FIELD |= (1 << encoder_list[(NUM)].pin_ ##FIELD)
 
+#define HAS_FEAT(NUM, FEAT) (encoder_list[(NUM)].features & (FEAT))
+
 // value is in 10ms units
 #define BUTTON_DEBOUNCE_DELAY 3
 
@@ -32,18 +34,29 @@ void rotary_init(struct rotary_encoder *encoders, uint8_t count)
 
 	// configure ports
 	for (uint8_t i = 0; i < num_encoders; i++) {
-		MAKE_OUTPUT(i, leds[0]);
-		MAKE_OUTPUT(i, leds[1]);
-		MAKE_INPUT(i, phase[0]);
-		MAKE_INPUT(i, phase[1]);
-		MAKE_INPUT(i, button);
-		ENABLE_PULLUP(i, button);
+		if (HAS_FEAT(i, FEAT_LED)) {
+			MAKE_OUTPUT(i, leds[0]);
+		}
+		if (HAS_FEAT(i, FEAT_LED2)) {
+			MAKE_OUTPUT(i, leds[1]);
+		}
+		if (HAS_FEAT(i, FEAT_ROTARY)) {
+			MAKE_INPUT(i, phase[0]);
+			MAKE_INPUT(i, phase[1]);
+		}
+		if (HAS_FEAT(i, FEAT_BUTTON)) {
+			MAKE_INPUT(i, button);
+			ENABLE_PULLUP(i, button);
+		}
 	}
 
 	// prepare data
 	for (uint8_t i = 0; i < num_encoders; i++) {
-		int8_t new = 0;
+		if (!HAS_FEAT(i, FEAT_ROTARY)) {
+			continue;
+		}
 
+		int8_t new = 0;
 		if (READ_FIELD(i, phase[0])) {
 			new = 3;
 		}
@@ -70,24 +83,26 @@ ISR(TIMER0_COMPA_vect)
 	}
 
 	for (uint8_t i = 0; i < num_encoders; i++) {
-		int8_t new, diff;
+		if (HAS_FEAT(i, FEAT_ROTARY)) {
+			int8_t new, diff;
 
-		// update rotary data
-		new = 0;
-		if (READ_FIELD(i, phase[0])) {
-			new = 3;
-		}
-		if (READ_FIELD(i, phase[1])) {
-			new ^= 1;
-		}
-		diff = last[i] - new;
-		if (diff & 1) {
-			last[i] = new;
-			enc_delta[i] += (diff & 2) - 1;
+			// update rotary data
+			new = 0;
+			if (READ_FIELD(i, phase[0])) {
+				new = 3;
+			}
+			if (READ_FIELD(i, phase[1])) {
+				new ^= 1;
+			}
+			diff = last[i] - new;
+			if (diff & 1) {
+				last[i] = new;
+				enc_delta[i] += (diff & 2) - 1;
+			}
 		}
 
 		// update buttons if the 10ms timer is over
-		if (!button_timer) {
+		if (!button_timer && HAS_FEAT(i, FEAT_BUTTON)) {
 			uint8_t input = !READ_FIELD(i, button);
 			if (input != button_state[i]) {
 				if (--button_counter[i] == 0xff) {
@@ -109,6 +124,9 @@ int16_t* rotary_read_all()
 
 	cli();
 	for (uint8_t i = 0; i < num_encoders; i++) {
+		if (!HAS_FEAT(i, FEAT_ROTARY)) {
+			break;
+		}
 		int16_t tmp = enc_delta[i];
 		enc_delta[i] = tmp & 3;
 		vals[i] = tmp >> 2;
@@ -121,6 +139,10 @@ int16_t* rotary_read_all()
 int16_t rotary_read(uint8_t num)
 {
 	int16_t val;
+
+	if (!HAS_FEAT(num, FEAT_ROTARY)) {
+		return 0;
+	}
 
 	cli();
 	val = enc_delta[num];
@@ -135,6 +157,7 @@ uint8_t rotary_read_button(uint8_t num, uint8_t clear)
 	uint8_t rc;
 
 	cli();
+	// for non-button inputs this would simply be 0 all the time
 	rc = button_press[num];
 	if (clear) {
 		button_press[num] = 0;
@@ -150,6 +173,7 @@ uint8_t* rotary_read_button_all(uint8_t clear)
 
 	cli();
 	for (uint8_t i = 0; i < num_encoders; i++) {
+		// for non-button inputs this would simply be 0 all the time
 		states[i] = button_press[i];
 		if (clear) {
 			button_press[i] = 0;
@@ -162,7 +186,8 @@ uint8_t* rotary_read_button_all(uint8_t clear)
 
 void rotary_set_leds(uint8_t num, uint8_t leds)
 {
-	for (uint8_t i = 0; i < 2; i++) {
+	uint8_t nleds = HAS_FEAT(num, FEAT_LED2) ? 2 : (HAS_FEAT(num, FEAT_LED) ? 1 : 0);
+	for (uint8_t i = 0; i < nleds; i++) {
 		if (leds & (1 << i)) {
 			SET_FIELD(num, leds[i]);
 		}
