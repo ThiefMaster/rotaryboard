@@ -1,6 +1,7 @@
 # misc
 .*.swp
 *.hex
+*.bak
 .tmp/
 # visual studio
 *.suo
@@ -8,3 +9,8 @@ obj/
 Properties/
 Debug/
 Release/
+# eagle
+*.s#?
+*.b#?
+*.l#?
+eagle.epf
