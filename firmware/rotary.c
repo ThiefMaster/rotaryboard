@@ -10,7 +10,7 @@
 #define ENABLE_PULLUP(NUM, FIELD) SET_FIELD(NUM, FIELD)
 
 // value is in 10ms units
-#define BUTTON_DEOUNCE_DELAY 3
+#define BUTTON_DEBOUNCE_DELAY 3
 
 
 static struct rotary_encoder *encoder_list = 0;
@@ -31,7 +31,7 @@ void rotary_init(struct rotary_encoder *encoders, uint8_t count)
 	num_encoders = count;
 
 	// configure ports
-	for (int8_t i = 0; i < num_encoders; i++) {
+	for (uint8_t i = 0; i < num_encoders; i++) {
 		MAKE_OUTPUT(i, leds[0]);
 		MAKE_OUTPUT(i, leds[1]);
 		MAKE_INPUT(i, phase[0]);
@@ -41,7 +41,7 @@ void rotary_init(struct rotary_encoder *encoders, uint8_t count)
 	}
 
 	// prepare data
-	for (int8_t i = 0; i < num_encoders; i++) {
+	for (uint8_t i = 0; i < num_encoders; i++) {
 		int8_t new = 0;
 
 		if (READ_FIELD(i, phase[0])) {
@@ -69,8 +69,8 @@ ISR(TIMER0_COMPA_vect)
 		button_timer = 0;
 	}
 
-	for (int8_t i = 0; i < num_encoders; i++) {
-		int8_t new, diff, input;
+	for (uint8_t i = 0; i < num_encoders; i++) {
+		int8_t new, diff;
 
 		// update rotary data
 		new = 0;
@@ -88,15 +88,15 @@ ISR(TIMER0_COMPA_vect)
 
 		// update buttons if the 10ms timer is over
 		if (!button_timer) {
-			input = !READ_FIELD(i, button);
+			uint8_t input = !READ_FIELD(i, button);
 			if (input != button_state[i]) {
 				if (--button_counter[i] == 0xff) {
-					button_counter[i] = BUTTON_DEOUNCE_DELAY;
+					button_counter[i] = BUTTON_DEBOUNCE_DELAY;
 					button_press[i] = button_state[i] = input;
 				}
 			}
 			else {
-				button_counter[i] = BUTTON_DEOUNCE_DELAY;
+				button_counter[i] = BUTTON_DEBOUNCE_DELAY;
 			}
 		}
 	}
@@ -140,9 +140,7 @@ uint8_t rotary_read_button(uint8_t num, uint8_t clear)
 		button_press[num] = 0;
 	}
 	sei();
-
 	return rc;
-
 }
 
 
@@ -158,9 +156,7 @@ uint8_t* rotary_read_button_all(uint8_t clear)
 		}
 	}
 	sei();
-
 	return states;
-
 }
 
 

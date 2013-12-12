@@ -1,8 +1,10 @@
+# misc
 .*.swp
+*.hex
+.tmp/
+# visual studio
 *.suo
 obj/
 Properties/
 Debug/
 Release/
-*.hex
-.tmp/
