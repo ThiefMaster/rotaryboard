@@ -8,11 +8,14 @@
 #include "uart.h"
 #include "rotary.h"
 
-#define NUM_ENCODERS 2
+#define NUM_ENCODERS 5
 
-static struct rotary_encoder rotary_encoders[2] = {
-	ROTARY_ENCODER(/* phases */ B, 3, B, 4, /* button */ B, 2, /* leds */ B, 0, B, 1),
-	ROTARY_ENCODER(/* phases */ D, 5, D, 6, /* button */ D, 4, /* leds */ D, 2, D, 3)
+static struct rotary_encoder rotary_encoders[NUM_ENCODERS] = {
+	ROTARY_ENCODER(/* phases */ B, 1, B, 2, /* button */ B, 3, /* leds */ B, 0, A, 2),
+	ROTARY_ENCODER(/* phases */ A, 3, A, 1, /* button */ A, 0, /* leds */ A, 4, A, 5),
+	ROTARY_ENCODER(/* phases */ C, 7, C, 6, /* button */ A, 7, /* leds */ A, 6, C, 5),
+	ROTARY_ENCODER(/* phases */ D, 7, C, 1, /* button */ C, 2, /* leds */ C, 4, C, 3),
+	ROTARY_ENCODER(/* phases */ D, 2, D, 3, /* button */ D, 4, /* leds */ D, 6, D, 5)
 };
 
 static volatile uint8_t t2_cnt;
@@ -48,8 +51,9 @@ int main()
 	wdt_disable();
 
 	rotary_init(rotary_encoders, NUM_ENCODERS);
-	rotary_set_leds(0, 3);
-	rotary_set_leds(1, 3);
+	for (int i = 0; i < NUM_ENCODERS; i++) {
+		rotary_set_leds(i, 3);
+	}
 
 	// run t2 with 100hz
 	TCCR2A = (1 << WGM21);
@@ -99,8 +103,8 @@ int main()
 				char color = line[7];
 				uint8_t leds = 0xff;
 				if (color == '0') leds = 0;
-				else if (color == 'G') leds = 1;
-				else if (color == 'R') leds = 2;
+				else if (color == 'R') leds = 1;
+				else if (color == 'G') leds = 2;
 				else if (color == 'Y') leds = 3;
 				if (num < NUM_ENCODERS && leds != 0xff) {
 					handled = 1;
