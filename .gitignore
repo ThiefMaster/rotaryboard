@@ -6,7 +6,6 @@
 # visual studio
 *.suo
 obj/
-Properties/
 Debug/
 Release/
 # eagle
