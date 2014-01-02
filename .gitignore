@@ -1,8 +1,11 @@
 # misc
 .*.swp
 *.hex
+*.pyc
 *.bak
 .tmp/
+# pycharm
+.idea/
 # visual studio
 *.suo
 obj/
