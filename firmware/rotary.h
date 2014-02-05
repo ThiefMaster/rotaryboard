@@ -61,7 +61,7 @@ struct rotary_encoder {
 	{ _MAKE_P(PORT_LED_0, PIN_LED_0), _MAKE_P(PORT_LED_1, PIN_LED_1) } \
 }
 
-// when using buttons make sure to place them AFTER the actual rotary encoders
+// when using buttons/leds make sure to place them AFTER the actual rotary encoders
 // the first item that does not have FEAT_ROTARY breaks rotary-related loops
 #define LED_BUTTON(PORT_BUTTON, PIN_BUTTON, PORT_LED, PIN_LED) { \
 	FEAT_BUTTON | FEAT_LED, \
@@ -69,6 +69,17 @@ struct rotary_encoder {
 	{ NULL, NULL }, \
 	{ 0, 0 }, \
 	& _MAKE_DDR(PORT_BUTTON), & _MAKE_PIN(PORT_BUTTON), & _MAKE_PORT(PORT_BUTTON), _MAKE_P(PORT_BUTTON, PIN_BUTTON), \
+	{ & _MAKE_DDR(PORT_LED), NULL }, \
+	{ & _MAKE_PORT(PORT_LED), NULL }, \
+	{ _MAKE_P(PORT_LED, PIN_LED), 0 } \
+}
+
+#define LED(PORT_LED, PIN_LED) { \
+	FEAT_LED, \
+	{ NULL, NULL }, \
+	{ NULL, NULL }, \
+	{ 0, 0 }, \
+	NULL, NULL, NULL, 0, \
 	{ & _MAKE_DDR(PORT_LED), NULL }, \
 	{ & _MAKE_PORT(PORT_LED), NULL }, \
 	{ _MAKE_P(PORT_LED, PIN_LED), 0 } \
