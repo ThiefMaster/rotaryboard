@@ -1,3 +1,0 @@
-[submodule "winmixer/CoreAudio"]
-	path = winmixer/CoreAudio
-	url = https://github.com/ThiefMaster/coreaudio-dotnet
